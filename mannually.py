@@ -88,6 +88,17 @@ class Mannually(Toplevel):
         self.ax.imshow(self.image)
         self.canvas.draw()
 
+
+    def get_RGBI(self):
+        img6767 = self.get_wafer()
+        img6767 = cv2.resize(img6767, dsize=(67,67), interpolation=cv2.INTER_AREA)
+        MainR=img6767[:,:,0]
+        MainG=img6767[:,:,1]
+        MainB=img6767[:,:,2]
+        MainI = np.array([[MainR[i,j]*0.2989+MainG[i,j]*0.5870+MainB[i,j]*0.1140 for j in range(67) ] for i in range(67)] )# why????
+
+        return MainR, MainG, MainB, MainI
+
     def get_wafer(self):
         img = self.img_crop.copy()
 
@@ -109,18 +120,6 @@ class Mannually(Toplevel):
         final = cv2.bitwise_or(fg, bk)
         # cv2.imshow('image',final)
         return final
-
-
-    def get_RGBI(self):
-        img6767 = self.get_wafer()
-        img6767 = cv2.resize(img6767, dsize=(67,67), interpolation=cv2.INTER_AREA)
-        MainR=img6767[:,:,0]
-        MainG=img6767[:,:,1]
-        MainB=img6767[:,:,2]
-        MainI = np.array([[MainR[i,j]*0.2989+MainG[i,j]*0.5870+MainB[i,j]*0.1140 for j in range(67) ] for i in range(67)] )# why????
-
-        return MainR, MainG, MainB, MainI
-
     def save_rgb_data(self, dirname):
         MainR, MainG, MainB, MainI = self.get_RGBI()
         coords = pd.read_csv('Grid1500_plus_Coordinates.txt', sep = ' ')
