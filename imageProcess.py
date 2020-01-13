@@ -28,17 +28,7 @@ class ImageProcess():
     def get_ori(self):
         return self.color.copy()
 
-    def _resize(self, image, width):
-        height = int(image.shape[0]*width/image.shape[1])
-        return (width, height)
 
-    def isCircle(self):
-        return True if self.circles is not None else False
-
-    #original + circle
-    def get_circle(self):
-        output = self.color1.copy()
-        return output
 
     #rectangle
     def get_crop(self):
@@ -57,14 +47,20 @@ class ImageProcess():
         mask = cv2.circle(image_black, (r,r), r, (255,255,255), -1)
         crop_img2 = cv2.cvtColor(crop_img, cv2.COLOR_RGB2RGBA)
         crop_img2[:, :, 3] = mask
-        # cv2.imwrite('xx.png', crop_img2)
 
-
-        # BB=np.array(mask, dtype=bool)
-        # BBB=np.bitwise_not(BB)
-        # crop_img2[BBB] = 255
         return crop_img2
 
+    def _resize(self, image, width):
+        height = int(image.shape[0]*width/image.shape[1])
+        return (width, height)
+
+    def isCircle(self):
+        return True if self.circles is not None else False
+
+    #original + circle
+    def get_circle(self):
+        output = self.color1.copy()
+        return output
     #get_RGB figures
     def get_RGBI(self):
         crop_img = self.get_crop()
