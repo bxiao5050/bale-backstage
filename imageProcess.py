@@ -61,24 +61,15 @@ class ImageProcess():
     def get_circle(self):
         output = self.color1.copy()
         return output
-    #get_RGB figures
-    def get_RGBI(self):
-        crop_img = self.get_crop()
-        #create a mask
-        r = self.r
-        image_black = np.zeros((2*r,2*r))
-        mask = cv2.circle(image_black, (r,r), r, (255,255,255), -1)
-        BB=np.array(mask, dtype=bool)
-        BBB=np.bitwise_not(BB)
-        crop_img[BBB] = 255
 
-        img6767 = cv2.resize(crop_img, dsize=(67,67), interpolation=cv2.INTER_AREA)
-        MainR=img6767[:,:,0]
-        MainG=img6767[:,:,1]
-        MainB=img6767[:,:,2]
-        MainI = np.array([[MainR[i,j]*0.2989+MainG[i,j]*0.5870+MainB[i,j]*0.1140 for j in range(67) ] for i in range(67)] )# why????
 
-        return MainR, MainG, MainB, MainI
+    def save_wafer_image(self, dirname):
+        # cv2.imwrite(dirname+'_wafer.png', cv2.cvtColor(self.get_wafer(), cv2.COLOR_BGR2RGB))
+        plt.cla()
+        plt.imshow(self.get_wafer())
+        plt.axis('off')
+        plt.savefig(dirname+'_wafer.png', format = 'png', transparent = True, dpi = 800)
+
 
     def save_rgb_data(self, dirname):
         MainR, MainG, MainB, MainI = self.get_RGBI()
@@ -95,16 +86,6 @@ class ImageProcess():
         coords['I']=np.reshape(MainI1, (4489, 1))
         #save rows where corsses is not 0
         flag = coords[coords['Crosses'] != 0].to_csv(dirname+'_rgb.csv', index=None, sep=';')
-
-
-    def save_wafer_image(self, dirname):
-        # cv2.imwrite(dirname+'_wafer.png', cv2.cvtColor(self.get_wafer(), cv2.COLOR_BGR2RGB))
-        plt.cla()
-        plt.imshow(self.get_wafer())
-        plt.axis('off')
-        plt.savefig(dirname+'_wafer.png', format = 'png', transparent = True, dpi = 800)
-
-
 
 
 
