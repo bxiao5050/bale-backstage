@@ -57,15 +57,6 @@ class Main_RGB(Frame):
 
         self.dirname = ''
 
-    def OnDoubleClick(self, event):
-        item = self.treeview.treeview.focus()
-        imageName = self.treeview.treeview.item(item, 'text')
-        Mannually(self, self.myprocess.get_ori(), imageName)
-
-
-    def on_batch(self):
-        batch = Batch(self, self.treeview.treeview,save_path = self.dirname, dirname = self.dirname)
-        # batch = Batch().run(self.treeview.treeview)
 
     def _on_save_img(self):
         path = filedialog.asksaveasfilename()
