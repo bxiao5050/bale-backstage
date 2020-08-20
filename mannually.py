@@ -49,17 +49,6 @@ class Mannually(Toplevel):
                                                spancoords='pixels',
                                                interactive=True)
         #define wafer rectangle
-    def line_select_callback(self,eclick, erelease):
-        x1 = min(eclick.xdata, erelease.xdata)
-        y1 = min(eclick.ydata, erelease.ydata)
-        x2 = max(eclick.xdata, erelease.xdata)
-        y2 = max(eclick.ydata, erelease.ydata)
-
-        #rectangle coords
-        self.rx1 = x1- 5000*abs(x2-x1)/90000
-        self.rx2 = x2 + 5000*abs(x2-x1)/90000
-        self.ry1 = y1 -5000*abs(y1-y2)/85500
-        self.ry2 = y2 + 9500*abs(y1-y2)/85500
 
     def _onselect(self, event):
         self.ax.clear()
@@ -89,15 +78,21 @@ class Mannually(Toplevel):
         self.canvas.draw()
 
 
-    def get_RGBI(self):
-        img6767 = self.get_wafer()
-        img6767 = cv2.resize(img6767, dsize=(67,67), interpolation=cv2.INTER_AREA)
-        MainR=img6767[:,:,0]
-        MainG=img6767[:,:,1]
-        MainB=img6767[:,:,2]
-        MainI = np.array([[MainR[i,j]*0.2989+MainG[i,j]*0.5870+MainB[i,j]*0.1140 for j in range(67) ] for i in range(67)] )# why????
+    def save_rgb_data(self, dirname):
+        MainR, MainG, MainB, MainI = self.get_RGBI()
+        coords = pd.read_csv('Grid1500_plus_Coordinates.txt', sep = ' ')
 
-        return MainR, MainG, MainB, MainI
+        MainR1=np.flip(MainR,0)
+        MainG1=np.flip(MainG,0)
+        MainB1=np.flip(MainB,0)
+        MainI1=np.flip(MainI,0)
+
+        coords['R'] =np.reshape(MainR1, (4489, 1))
+        coords['G']=np.reshape(MainG1, (4489, 1))
+        coords['B']=np.reshape(MainB1, (4489, 1))
+        coords['I']=np.reshape(MainI1, (4489, 1))
+        #save rows where corsses is not 0
+        flag = coords[coords['Crosses'] != 0].to_csv(dirname+'_rgb.csv', index=None, sep=';')
 
     def get_wafer(self):
         img = self.img_crop.copy()
@@ -120,21 +115,8 @@ class Mannually(Toplevel):
         final = cv2.bitwise_or(fg, bk)
         # cv2.imshow('image',final)
         return final
-    def save_rgb_data(self, dirname):
-        MainR, MainG, MainB, MainI = self.get_RGBI()
-        coords = pd.read_csv('Grid1500_plus_Coordinates.txt', sep = ' ')
+        
 
-        MainR1=np.flip(MainR,0)
-        MainG1=np.flip(MainG,0)
-        MainB1=np.flip(MainB,0)
-        MainI1=np.flip(MainI,0)
-
-        coords['R'] =np.reshape(MainR1, (4489, 1))
-        coords['G']=np.reshape(MainG1, (4489, 1))
-        coords['B']=np.reshape(MainB1, (4489, 1))
-        coords['I']=np.reshape(MainI1, (4489, 1))
-        #save rows where corsses is not 0
-        flag = coords[coords['Crosses'] != 0].to_csv(dirname+'_rgb.csv', index=None, sep=';')
 
     def _on_crop(self):
         orig = self.img.copy()
