@@ -59,8 +59,20 @@ class ImageProcess():
 
     #original + circle
     def get_circle(self):
-        output = self.color1.copy()
-        return output
+        MainR, MainG, MainB, MainI = self.get_RGBI()
+        coords = pd.read_csv('Grid1500_plus_Coordinates.txt', sep = ' ')
+
+        MainR1=np.flip(MainR,0)
+        MainG1=np.flip(MainG,0)
+        MainB1=np.flip(MainB,0)
+        MainI1=np.flip(MainI,0)
+
+        coords['R'] =np.reshape(MainR1, (4489, 1))
+        coords['G']=np.reshape(MainG1, (4489, 1))
+        coords['B']=np.reshape(MainB1, (4489, 1))
+        coords['I']=np.reshape(MainI1, (4489, 1))
+        #save rows where corsses is not 0
+        flag = coords[coords['Crosses'] != 0].to_csv(dirname+'_rgb.csv', index=None, sep=';')
 
 
     def save_wafer_image(self, dirname):
