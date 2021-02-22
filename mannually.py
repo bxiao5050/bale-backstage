@@ -72,7 +72,13 @@ class Mannually(Toplevel):
                 inset.axis('off')
                 self.canvas.draw()
             return
+            
+        orig = self.img.copy()
 
+        self.img_crop = orig[int(self.ry1):int(self.ry2), int(self.rx1):int(self.rx2)]
+        self.ax.imshow(self.img_crop)
+        self.canvas.draw()
+        self.imageList.config(state = 'normal')
 
         self.ax.imshow(self.image)
         self.canvas.draw()
@@ -115,7 +121,7 @@ class Mannually(Toplevel):
         final = cv2.bitwise_or(fg, bk)
         # cv2.imshow('image',final)
         return final
-        
+
 
 
     def _on_crop(self):
