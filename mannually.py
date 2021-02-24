@@ -18,7 +18,17 @@ class Mannually(Toplevel):
         self.title(img_name)
         b_f = Frame(self)
         b_f.pack()
-
+        #canvas
+        fig = Figure(figsize=(5.5, 4))
+        canvas_f = Frame(self)
+        canvas_f.pack(side = 'bottom', fill = 'both', expand = True)
+        self.canvas = FigureCanvasTkAgg(fig, master=canvas_f)
+        self.ax = fig.add_subplot()
+        self.ax.axis('off')
+        fig.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
+        toolbar = NavigationToolbar2Tk(self.canvas, canvas_f)
+        toolbar.update()
+        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
         Label(b_f, text = '1. drag the mouse to select four corsses').pack(side = 'left', padx = (5,5))
         Button(b_f, text = '2. crop', command =self._on_crop).pack(side = 'left')
         self.imageList = ttk.Combobox(b_f, values = ['rectangle', 'only wafer', 'RGB figures'], state= 'disabled')
@@ -72,7 +82,7 @@ class Mannually(Toplevel):
                 inset.axis('off')
                 self.canvas.draw()
             return
-            
+
         orig = self.img.copy()
 
         self.img_crop = orig[int(self.ry1):int(self.ry2), int(self.rx1):int(self.rx2)]
@@ -85,6 +95,13 @@ class Mannually(Toplevel):
 
 
     def save_rgb_data(self, dirname):
+        orig = self.img.copy()
+
+        self.img_crop = orig[int(self.ry1):int(self.ry2), int(self.rx1):int(self.rx2)]
+        self.ax.imshow(self.img_crop)
+        self.canvas.draw()
+        self.imageList.config(state = 'normal')
+
         MainR, MainG, MainB, MainI = self.get_RGBI()
         coords = pd.read_csv('Grid1500_plus_Coordinates.txt', sep = ' ')
 
