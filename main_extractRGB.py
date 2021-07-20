@@ -41,6 +41,21 @@ class Main_RGB(Frame):
         Button(b_f, bg = 'lightblue', width = 15, text = 'batch', command = self.on_batch).grid(row = 0, column = 4, sticky = 'e', padx = (80,0))
 
 
+        #canvas
+        self.fig = Figure(figsize=(5.5, 4))
+        canvas_f = Frame(self)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=canvas_f)
+        self.ax = self.fig.add_subplot()
+        self.ax.axis('off')
+        self.ax.format_coord = lambda x, y: "RGB = "
+        self.fig.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
+        toolbar = NavigationToolbar(self.canvas, canvas_f)
+        toolbar.update()
+        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+
+        filelist.grid(row = 0, column = 0, rowspan = 2, sticky = 'news', padx = (5,5), pady = (5,5))
+        para_p.grid(row = 0, column =1, sticky = 'nw', padx = (5,5), pady = (5,5))
+        canvas_f.grid(row = 1, column =1, sticky = 'news', padx = (5,5), pady = (5,5))
 
 
         self.columnconfigure(1, weight = 1)
@@ -57,6 +72,15 @@ class Main_RGB(Frame):
 
         self.dirname = ''
 
+    def OnDoubleClick(self, event):
+        item = self.treeview.treeview.focus()
+        imageName = self.treeview.treeview.item(item, 'text')
+        Mannually(self, self.myprocess.get_ori(), imageName)
+
+
+    def on_batch(self):
+        batch = Batch(self, self.treeview.treeview,save_path = self.dirname, dirname = self.dirname)
+        # batch = Batch().run(self.treeview.treeview)
 
     def _on_save_img(self):
         path = filedialog.asksaveasfilename()

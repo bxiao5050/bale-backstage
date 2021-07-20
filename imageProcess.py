@@ -28,7 +28,17 @@ class ImageProcess():
     def get_ori(self):
         return self.color.copy()
 
+    def _resize(self, image, width):
+        height = int(image.shape[0]*width/image.shape[1])
+        return (width, height)
 
+    def isCircle(self):
+        return True if self.circles is not None else False
+
+    #original + circle
+    def get_circle(self):
+        output = self.color1.copy()
+        return output
 
     #rectangle
     def get_crop(self):
@@ -47,18 +57,34 @@ class ImageProcess():
         mask = cv2.circle(image_black, (r,r), r, (255,255,255), -1)
         crop_img2 = cv2.cvtColor(crop_img, cv2.COLOR_RGB2RGBA)
         crop_img2[:, :, 3] = mask
+        # cv2.imwrite('xx.png', crop_img2)
 
+
+        # BB=np.array(mask, dtype=bool)
+        # BBB=np.bitwise_not(BB)
+        # crop_img2[BBB] = 255
         return crop_img2
 
-    def _resize(self, image, width):
-        height = int(image.shape[0]*width/image.shape[1])
-        return (width, height)
+    #get_RGB figures
+    def get_RGBI(self):
+        crop_img = self.get_crop()
+        #create a mask
+        r = self.r
+        image_black = np.zeros((2*r,2*r))
+        mask = cv2.circle(image_black, (r,r), r, (255,255,255), -1)
+        BB=np.array(mask, dtype=bool)
+        BBB=np.bitwise_not(BB)
+        crop_img[BBB] = 255
 
-    def isCircle(self):
-        return True if self.circles is not None else False
+        img6767 = cv2.resize(crop_img, dsize=(67,67), interpolation=cv2.INTER_AREA)
+        MainR=img6767[:,:,0]
+        MainG=img6767[:,:,1]
+        MainB=img6767[:,:,2]
+        MainI = np.array([[MainR[i,j]*0.2989+MainG[i,j]*0.5870+MainB[i,j]*0.1140 for j in range(67) ] for i in range(67)] )# why????
 
-    #original + circle
-    def get_circle(self):
+        return MainR, MainG, MainB, MainI
+
+    def save_rgb_data(self, dirname):
         MainR, MainG, MainB, MainI = self.get_RGBI()
         coords = pd.read_csv('Grid1500_plus_Coordinates.txt', sep = ' ')
 
@@ -83,21 +109,6 @@ class ImageProcess():
         plt.savefig(dirname+'_wafer.png', format = 'png', transparent = True, dpi = 800)
 
 
-    def save_rgb_data(self, dirname):
-        MainR, MainG, MainB, MainI = self.get_RGBI()
-        coords = pd.read_csv('Grid1500_plus_Coordinates.txt', sep = ' ')
-
-        MainR1=np.flip(MainR,0)
-        MainG1=np.flip(MainG,0)
-        MainB1=np.flip(MainB,0)
-        MainI1=np.flip(MainI,0)
-
-        coords['R'] =np.reshape(MainR1, (4489, 1))
-        coords['G']=np.reshape(MainG1, (4489, 1))
-        coords['B']=np.reshape(MainB1, (4489, 1))
-        coords['I']=np.reshape(MainI1, (4489, 1))
-        #save rows where corsses is not 0
-        flag = coords[coords['Crosses'] != 0].to_csv(dirname+'_rgb.csv', index=None, sep=';')
 
 
 

@@ -37,12 +37,17 @@ class Batch():
         self.w.destroy()
 
 
+
+    def _on_wafer(self):
+        self.var_wafer.set(0) if self.var_wafer.get() ==0 else self.var_wafer.set(1)
+
+    def _on_rgb_data(self):
+        self.var_rgb_data.set(0) if self.var_rgb_data.get() ==0 else self.var_rgb_data.set(1)
+
     def _on_path(self):
         self.save_path = filedialog.askdirectory()
         self.dirPath.delete(0, 'end')
         self.dirPath.insert(0, self.save_path)
-
-
 
 
     def run(self, treeview):
@@ -75,10 +80,26 @@ class Batch():
             time.sleep(0.2)
         messagebox.showinfo(message =f'{succeed} succeeded and {fail} failed')
 
-    def _on_wafer(self):
-        self.var_wafer.set(0) if self.var_wafer.get() ==0 else self.var_wafer.set(1)
-
-    def _on_rgb_data(self):
-        self.var_rgb_data.set(0) if self.var_rgb_data.get() ==0 else self.var_rgb_data.set(1)
 
 
+
+
+def main():
+    # print(version('tkinter'))
+    # import pkg_resources
+    # print(pkg_resources.get_distribution('tkinter').version)
+    root = Tk()
+    # treeview = ttk.Treeview(root)
+
+    # treeview.pack()
+    # for i in range(8):
+    #     treeview.insert("", 'end', text = i)
+
+    #     ttk.Style().theme_use('clam')
+    Batch(root)
+    # app = Batch().run(treeview)
+
+    root.mainloop()
+
+if __name__ == '__main__':
+    main()

@@ -18,17 +18,7 @@ class Mannually(Toplevel):
         self.title(img_name)
         b_f = Frame(self)
         b_f.pack()
-        #canvas
-        fig = Figure(figsize=(5.5, 4))
-        canvas_f = Frame(self)
-        canvas_f.pack(side = 'bottom', fill = 'both', expand = True)
-        self.canvas = FigureCanvasTkAgg(fig, master=canvas_f)
-        self.ax = fig.add_subplot()
-        self.ax.axis('off')
-        fig.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
-        toolbar = NavigationToolbar2Tk(self.canvas, canvas_f)
-        toolbar.update()
-        self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+
         Label(b_f, text = '1. drag the mouse to select four corsses').pack(side = 'left', padx = (5,5))
         Button(b_f, text = '2. crop', command =self._on_crop).pack(side = 'left')
         self.imageList = ttk.Combobox(b_f, values = ['rectangle', 'only wafer', 'RGB figures'], state= 'disabled')
@@ -59,6 +49,17 @@ class Mannually(Toplevel):
                                                spancoords='pixels',
                                                interactive=True)
         #define wafer rectangle
+    def line_select_callback(self,eclick, erelease):
+        x1 = min(eclick.xdata, erelease.xdata)
+        y1 = min(eclick.ydata, erelease.ydata)
+        x2 = max(eclick.xdata, erelease.xdata)
+        y2 = max(eclick.ydata, erelease.ydata)
+
+        #rectangle coords
+        self.rx1 = x1- 5000*abs(x2-x1)/90000
+        self.rx2 = x2 + 5000*abs(x2-x1)/90000
+        self.ry1 = y1 -5000*abs(y1-y2)/85500
+        self.ry2 = y2 + 9500*abs(y1-y2)/85500
 
     def _onselect(self, event):
         self.ax.clear()
@@ -83,39 +84,9 @@ class Mannually(Toplevel):
                 self.canvas.draw()
             return
 
-        orig = self.img.copy()
-
-        self.img_crop = orig[int(self.ry1):int(self.ry2), int(self.rx1):int(self.rx2)]
-        self.ax.imshow(self.img_crop)
-        self.canvas.draw()
-        self.imageList.config(state = 'normal')
 
         self.ax.imshow(self.image)
         self.canvas.draw()
-
-
-    def save_rgb_data(self, dirname):
-        orig = self.img.copy()
-
-        self.img_crop = orig[int(self.ry1):int(self.ry2), int(self.rx1):int(self.rx2)]
-        self.ax.imshow(self.img_crop)
-        self.canvas.draw()
-        self.imageList.config(state = 'normal')
-
-        MainR, MainG, MainB, MainI = self.get_RGBI()
-        coords = pd.read_csv('Grid1500_plus_Coordinates.txt', sep = ' ')
-
-        MainR1=np.flip(MainR,0)
-        MainG1=np.flip(MainG,0)
-        MainB1=np.flip(MainB,0)
-        MainI1=np.flip(MainI,0)
-
-        coords['R'] =np.reshape(MainR1, (4489, 1))
-        coords['G']=np.reshape(MainG1, (4489, 1))
-        coords['B']=np.reshape(MainB1, (4489, 1))
-        coords['I']=np.reshape(MainI1, (4489, 1))
-        #save rows where corsses is not 0
-        flag = coords[coords['Crosses'] != 0].to_csv(dirname+'_rgb.csv', index=None, sep=';')
 
     def get_wafer(self):
         img = self.img_crop.copy()
@@ -140,6 +111,31 @@ class Mannually(Toplevel):
         return final
 
 
+    def get_RGBI(self):
+        img6767 = self.get_wafer()
+        img6767 = cv2.resize(img6767, dsize=(67,67), interpolation=cv2.INTER_AREA)
+        MainR=img6767[:,:,0]
+        MainG=img6767[:,:,1]
+        MainB=img6767[:,:,2]
+        MainI = np.array([[MainR[i,j]*0.2989+MainG[i,j]*0.5870+MainB[i,j]*0.1140 for j in range(67) ] for i in range(67)] )# why????
+
+        return MainR, MainG, MainB, MainI
+
+    def save_rgb_data(self, dirname):
+        MainR, MainG, MainB, MainI = self.get_RGBI()
+        coords = pd.read_csv('Grid1500_plus_Coordinates.txt', sep = ' ')
+
+        MainR1=np.flip(MainR,0)
+        MainG1=np.flip(MainG,0)
+        MainB1=np.flip(MainB,0)
+        MainI1=np.flip(MainI,0)
+
+        coords['R'] =np.reshape(MainR1, (4489, 1))
+        coords['G']=np.reshape(MainG1, (4489, 1))
+        coords['B']=np.reshape(MainB1, (4489, 1))
+        coords['I']=np.reshape(MainI1, (4489, 1))
+        #save rows where corsses is not 0
+        flag = coords[coords['Crosses'] != 0].to_csv(dirname+'_rgb.csv', index=None, sep=';')
 
     def _on_crop(self):
         orig = self.img.copy()
