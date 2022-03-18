@@ -77,7 +77,20 @@ class ImageProcess():
         coords['I']=np.reshape(MainI1, (4489, 1))
         #save rows where corsses is not 0
         flag = coords[coords['Crosses'] != 0].to_csv(dirname+'_rgb.csv', index=None, sep=';')
+        crop_img = self.get_crop()
+        #create a mask
+        r = self.r
+        image_black = np.zeros((2*r,2*r))
+        mask = cv2.circle(image_black, (r,r), r, (255,255,255), -1)
+        BB=np.array(mask, dtype=bool)
+        BBB=np.bitwise_not(BB)
+        crop_img[BBB] = 255
 
+        img6767 = cv2.resize(crop_img, dsize=(67,67), interpolation=cv2.INTER_AREA)
+        MainR=img6767[:,:,0]
+        MainG=img6767[:,:,1]
+        MainB=img6767[:,:,2]
+        MainI = np.array([[MainR[i,j]*0.2989+MainG[i,j]*0.5870+MainB[i,j]*0.1140 for j in range(67) ] for i in range(67)] )
 
     def save_wafer_image(self, dirname):
         crop_img = self.get_crop()
